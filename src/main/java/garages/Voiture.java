@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Voiture {
-    private String immatriculation;
-    private List<Stationnement> myStationnements;
+	@Getter
+	@NonNull
+	private final String immatriculation;
+	@ToString.Exclude // On ne veut pas afficher les stationnements dans toString
+	private final List<Stationnement> myStationnements = new LinkedList<>();
 
     public Voiture(String immatriculation) {
         if (immatriculation == null || immatriculation.isEmpty()) {
