@@ -1,34 +1,29 @@
 package garages;
 
-import java.util.ArrayList;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
+
+import java.io.PrintStream;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
 public class Voiture {
     private String immatriculation;
-    private List<Stationnement> myStationnements;
+    private Set<Stationnement> myStationnements;
 
     public Voiture(String immatriculation) {
-        if (immatriculation == null || immatriculation.isEmpty()) {
-            throw new IllegalArgumentException("L'immatriculation ne peut pas être vide.");
-        }
         this.immatriculation = immatriculation;
-        this.myStationnements = new ArrayList<>();
+        this.myStationnements = new HashSet<>();
     }
 
-    public void entreAuGarage(Garage g) throws IllegalStateException {
-        if (estDansUnGarage()) {
-            throw new IllegalStateException("La voiture est déjà dans un garage.");
-        }
-        myStationnements.add(new Stationnement(this, g));
-    }
-
-    public void sortDuGarage() throws IllegalStateException {
-        if (!estDansUnGarage()) {
-            throw new IllegalStateException("La voiture n'est pas actuellement dans un garage.");
-        }
-        myStationnements.get(myStationnements.size() - 1).terminer();
+    public boolean estDansUnGarage() {
+        return myStationnements.stream().anyMatch(Stationnement::estEnCours);
     }
 
     public Set<Garage> garagesVisites() {
@@ -39,8 +34,19 @@ public class Voiture {
         return garages;
     }
 
-    public boolean estDansUnGarage() {
-        return !myStationnements.isEmpty() && myStationnements.get(myStationnements.size() - 1).estEnCours();
+    public void entreAuGarage(Garage garage) throws IllegalStateException {
+        if (estDansUnGarage()) {
+            throw new IllegalStateException("La voiture est déjà dans un garage.");
+        }
+        myStationnements.add(new Stationnement(this, garage));
+    }
+
+    public void sortDuGarage() throws IllegalStateException {
+        Stationnement stationnementEnCours = myStationnements.stream()
+                .filter(Stationnement::estEnCours)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("La voiture n'est pas dans un garage."));
+        stationnementEnCours.terminer();
     }
 
     public void imprimeStationnements(PrintStream out) {
